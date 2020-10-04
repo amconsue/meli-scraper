@@ -18,3 +18,19 @@ services:
       meli:
         aliases:
           - ${NODE_SCRAPER_HOST}
+
+  meli-scraper-admin:
+    image: meli/scraper-admin
+    container_name: meli-scraper-admin
+    # command: bash -c "python manage.py runserver 0.0.0.0:${SCRAPER_ADMIN_PORT}"
+    command: /bin/sh -c "while true; do echo hello world; sleep 1; done"
+    volumes:
+      - ../scraper_admin:/opt/app/
+    env_file:
+        - ./.env
+    ports:
+      - "${SCRAPER_ADMIN_PORT}:${SCRAPER_ADMIN_PORT}"
+    networks:
+      meli:
+        aliases:
+          - ${SCRAPER_ADMIN_HOST}

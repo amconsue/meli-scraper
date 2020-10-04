@@ -26,7 +26,8 @@ module.exports.scrape = async (ctx, keyWord, pages) => {
                 item = itemListRaw[i]
 
                 let titleLinkNodes = item.getElementsByClassName('ui-search-item__group__element ui-search-link')
-                let highlightNodes = item.getElementsByClassName('ui-search-item__highlight-label__text')
+                let highlightSelector = document.querySelector(
+                    `#root-app > div > div > section > ol > li:nth-child(${i+1}) > div > div > div.ui-search-result__content-wrapper > div.ui-search-item__highlight-label.ui-search-item__highlight-label--best_seller > span`)
                 let priceNodes = item.getElementsByClassName('price-tag-fraction')
                 let discountNodes = item.getElementsByClassName('ui-search-price__discount')
                 let priceGroupNodes = item.getElementsByClassName('ui-search-item__group ui-search-item__group--price')
@@ -35,10 +36,10 @@ module.exports.scrape = async (ctx, keyWord, pages) => {
 
                 itemList.push({
                     name: titleLinkNodes && titleLinkNodes.length ? titleLinkNodes[0].getAttribute('title') : '',
-                    highlight: highlightNodes && highlightNodes.length ? highlightNodes[0].innerText : '',
+                    highlight: highlightSelector ? highlightSelector.innerText : '',
                     link: titleLinkNodes && titleLinkNodes.length ? titleLinkNodes[0].getAttribute('href') : '',
-                    originalPrice: priceNodes && priceNodes.length == 3 ? priceNodes[0].innerText : '',
-                    discountPrice: priceNodes && priceNodes.length == 3 ? priceNodes[1].innerText : priceNodes[0].innerText,
+                    originalPrice: priceNodes && priceNodes.length ? priceNodes[0].innerText : '',
+                    discountPrice: priceNodes && priceNodes.length == 3 ? priceNodes[1].innerText : '',
                     discount: discountNodes && discountNodes.length ? discountNodes[0].innerText.replace(' OFF', '') : '',
                     installments: installmentsChildNodes && installmentsChildNodes.length > 1 ? installmentsChildNodes[1].innerText.split('\n')[0].replace('x', '') : '',
                     installmentPrice: priceNodes && priceNodes.length == 3 ? priceNodes[2].innerText : priceNodes[1].innerText,
@@ -59,7 +60,7 @@ module.exports.scrape = async (ctx, keyWord, pages) => {
         currentPage++;
     }
     
-    console.log(items[items.length-1]);
+    console.log(items);
     await browser.close();
 
     // ctx.body = { message: 'ok'}

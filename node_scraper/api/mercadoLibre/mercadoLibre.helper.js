@@ -59,6 +59,7 @@ module.exports.scrape = async (ctx, keyWord, pages) => {
         currentPage++;
     }
     
+    console.log(items[items.length-1]);
     await browser.close();
 
     // ctx.body = { message: 'ok'}

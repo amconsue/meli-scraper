@@ -1,0 +1,20 @@
+version: '2.1'
+networks:
+   meli:
+     external: true
+services:
+  meli-node-scraper:
+    image: meli/node-scraper
+    container_name: meli-node-scraper
+    # command: bash -c "npm install && npm start"
+    command: /bin/sh -c "while true; do echo hello world; sleep 1; done"
+    volumes:
+      - ../node_scraper:/opt/app/
+    env_file:
+        - ./.env
+    ports:
+      - "${NODE_SCRAPER_PORT}:${NODE_SCRAPER_PORT}"
+    networks:
+      meli:
+        aliases:
+          - ${NODE_SCRAPER_HOST}

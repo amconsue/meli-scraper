@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+import os
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +27,7 @@ SECRET_KEY = '_5$yjv!e+#kcopb7v73u##k4l3e*x-x#16(@7z*^c#*0-5ipoj'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['localhost', 'scraper-admin']
 
 
 # Application definition
@@ -37,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'mercado_libre',
 ]
 
 MIDDLEWARE = [
@@ -122,3 +125,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+SCRAPER_ADMIN_HOST = os.environ.get('SCRAPER_ADMIN_HOST', 'localhost')
+SCRAPER_ADMIN_PORT = os.environ.get('SCRAPER_ADMIN_PORT', 5000)
+
+NODE_SCRAPER_HOST = os.environ.get('NODE_SCRAPER_HOST', 'localhost')
+NODE_SCRAPER_PORT = os.environ.get('NODE_SCRAPER_PORT', 4000)
+NODE_SCRAPER_API = '/api/mercadoLibre/v1/scrape'

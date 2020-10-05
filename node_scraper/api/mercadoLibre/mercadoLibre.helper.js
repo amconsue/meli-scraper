@@ -1,16 +1,13 @@
 const puppeteer = require('puppeteer')
+const service = require('./mercadoLibre.service')
 
-module.exports.scrape = async (ctx, keyWord, pages) => {
+module.exports.scrape = async (keyWord, pages, callbackUrl) => {
     let currentPage = 1
     let items = []
     const browser = await puppeteer.launch({
         headless: true,
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--window-size=1920,1080',
-            '--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3312.0 Safari/537.36"'
-        ]
+        executablePath: process.env.CHROMIUM_PATH,
+        args: ['--no-sandbox'],
     })
 
     const page = await browser.newPage()
@@ -29,7 +26,7 @@ module.exports.scrape = async (ctx, keyWord, pages) => {
                 let highlightSelector = document.querySelector(
                     `#root-app > div > div > section > ol > li:nth-child(${i+1}) > div > div > div.ui-search-result__content-wrapper > div.ui-search-item__highlight-label.ui-search-item__highlight-label--best_seller > span`)
                 let priceNodes = item.getElementsByClassName('price-tag-fraction')
-                let discountNodes = item.getElementsByClassName('ui-search-price__discount')
+                let discountPercentageNodes = item.getElementsByClassName('ui-search-price__discount')
                 let priceGroupNodes = item.getElementsByClassName('ui-search-item__group ui-search-item__group--price')
                 let installmentsChildNodes = priceGroupNodes && priceGroupNodes.length ? priceGroupNodes[0].childNodes : null
                 let storeNodes = item.getElementsByClassName('ui-search-official-store-item__link ui-search-link')
@@ -38,12 +35,12 @@ module.exports.scrape = async (ctx, keyWord, pages) => {
                     name: titleLinkNodes && titleLinkNodes.length ? titleLinkNodes[0].getAttribute('title') : '',
                     highlight: highlightSelector ? highlightSelector.innerText : '',
                     link: titleLinkNodes && titleLinkNodes.length ? titleLinkNodes[0].getAttribute('href') : '',
-                    originalPrice: priceNodes && priceNodes.length ? priceNodes[0].innerText : '',
-                    discountPrice: priceNodes && priceNodes.length == 3 ? priceNodes[1].innerText : '',
-                    discount: discountNodes && discountNodes.length ? discountNodes[0].innerText.replace(' OFF', '') : '',
+                    original_price: priceNodes && priceNodes.length ? priceNodes[0].innerText : '',
+                    discount_price: priceNodes && priceNodes.length == 3 ? priceNodes[1].innerText : '',
+                    discount_percentage: discountPercentageNodes && discountPercentageNodes.length ? discountPercentageNodes[0].innerText.replace(' OFF', '') : '',
                     installments: installmentsChildNodes && installmentsChildNodes.length > 1 ? installmentsChildNodes[1].innerText.split('\n')[0].replace('x', '') : '',
-                    installmentPrice: priceNodes && priceNodes.length == 3 ? priceNodes[2].innerText : priceNodes[1].innerText,
-                    storeLink: storeNodes && storeNodes.length ? storeNodes[0].getAttribute('href') : '',
+                    price_per_installment: priceNodes && priceNodes.length == 3 ? priceNodes[2].innerText : priceNodes[1].innerText,
+                    store_link: storeNodes && storeNodes.length ? storeNodes[0].getAttribute('href') : '',
                     store: storeNodes && storeNodes.length ? storeNodes[0].innerText.replace('Vendido por ', '') : ''
                 })
             }
@@ -59,14 +56,8 @@ module.exports.scrape = async (ctx, keyWord, pages) => {
         }
         currentPage++;
     }
+
+    await service.postExecutionItems(callbackUrl, items)
     
-    console.log(items);
     await browser.close();
-
-    // ctx.body = { message: 'ok'}
-    // ctx.status = 200
-
-    return ctx
 };
-
-module.exports.scrape(null, 'xiaomi', 5);

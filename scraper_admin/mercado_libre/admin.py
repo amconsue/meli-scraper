@@ -1,8 +1,10 @@
 import requests
 
 from django.conf import settings
+from django.conf.urls import url
 from django.contrib import admin
 from django.contrib import messages
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -25,7 +27,8 @@ class ExecutionModelAdmin(admin.ModelAdmin):
         'status'
     ]
     actions = [
-        'activate_scraping'
+        'activate_scraping',
+        'run_analysis'
     ]
 
     def _items(self, obj):
@@ -40,13 +43,14 @@ class ExecutionModelAdmin(admin.ModelAdmin):
 
     def activate_scraping(self, request, queryset):
         if queryset.count() > 1:
-            message = _('Only one scraping can be sent at a time')
+            message = _(
+                'Only one execution can be sent for scraping at a time')
             return self.message_user(request, message, level=messages.ERROR)
 
         execution = queryset.first()
 
         if execution.status != 'created':
-            message = _('Only only executions in status \'created\' can be '
+            message = _('Only executions in status \'Created\' can be '
                         'activated for scraping')
             return self.message_user(request, message, level=messages.ERROR)
 
@@ -85,6 +89,88 @@ class ExecutionModelAdmin(admin.ModelAdmin):
         message = _('Scraping process has been started')
         return self.message_user(request, message, level=messages.SUCCESS)
     activate_scraping.short_description = _('Activate Scraping')
+
+    def run_analysis(self, request, queryset):
+        if queryset.count() > 1:
+            message = _(
+                'Only one execution can be sent for analysis at a time')
+            return self.message_user(request, message, level=messages.ERROR)
+
+        execution = queryset.first()
+        if execution.status != 'completed':
+            message = _('Only executions in status \'Completed\' can be '
+                        'activated for analysis')
+            return self.message_user(request, message, level=messages.ERROR)
+
+        items = Item.objects.filter(execution=execution)
+
+        if not items.exists():
+            message = _('No items were found in this execution')
+            return self.message_user(request, message, level=messages.ERROR)
+
+        return self.run_analysis_confirmation(request, execution)
+    run_analysis.short_description = _('Run Analysis')
+
+    def run_analysis_confirmation(self, request, execution=None):
+        self.request = request
+
+        if execution:
+            context = dict(
+                # Include common variables for rendering the admin template.
+                self.admin_site.each_context(request),
+                execution=execution
+            )
+
+            return TemplateResponse(
+                request,
+                'run_analysis_confirmation.html',
+                context
+            )
+
+        if request.POST \
+                and request.POST.get('action') == 'run_analysis_confirmation':
+            execution_id = request.POST.get('execution_id', None)
+            comparison_field = request.POST.get('comparison_field', None)
+
+            execution = Execution.objects.get(id=execution_id)
+
+            data_list = []
+            product_counter = 0
+            items = Item.objects.filter(execution=execution)
+            item_counter = items.count()
+
+            for item in items:
+                object_to_compare = getattr(item, comparison_field)
+                if object_to_compare not in data_list:
+                    data_list.append(object_to_compare)
+                    product_counter += 1
+
+            context = dict(
+                # Include common variables for rendering the admin template.
+                self.admin_site.each_context(request),
+                execution=execution,
+                product_counter=product_counter,
+                item_counter=item_counter,
+                comparison_field=comparison_field.replace('_', ' ').title()
+            )
+
+            return TemplateResponse(
+                request,
+                'run_analysis_results.html',
+                context
+            )
+
+    def get_urls(self):
+        urls = super(ExecutionModelAdmin, self).get_urls()
+
+        my_urls = [
+            url(
+                r'^run_analysis_confirmation/$',
+                self.run_analysis_confirmation
+            )
+        ]
+
+        return my_urls + urls
 
     def has_delete_permission(self, request, obj=None):
         return False

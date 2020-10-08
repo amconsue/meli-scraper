@@ -6,7 +6,7 @@ module.exports.postExecutionItems = async (callbackUrl, items) => {
         method: 'post',
         data: items
     }).then(resp => {
-        console.log(`Items posted to ${callbackUrl}`)
+        console.log(`Post to ${callbackUrl} successfull`)
     }).catch(err => {
         console.log(`Post to ${callbackUrl} failed`)
     })

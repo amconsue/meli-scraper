@@ -1,5 +1,6 @@
 import datetime
 
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -25,7 +26,7 @@ class Execution(models.Model):
     key_word = models.CharField(
         _('Key Word'), max_length=20, default='xiaomi')
     pages = models.IntegerField(
-        _('Pages'), default=5)
+        _('Pages'), default=5, validators=[MinValueValidator(1)])
     source = models.CharField(
         _('Source'), max_length=10, default='node', choices=SOURCE_CHOICES)
     status = models.CharField(

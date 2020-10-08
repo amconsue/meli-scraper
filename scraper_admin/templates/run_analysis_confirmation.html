@@ -1,0 +1,58 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form#confirm-form input[type="submit"]').on("click", function (event) {
+            event.preventDefault();
+            $('form#confirm-form input[type="submit"]').prop('disabled', true);
+            $('form#confirm-form').submit();
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+
+<h1>{% trans 'Run Analysis for Execution with:' %}</h1>
+
+<ul>
+    <li><span>{% trans 'Key Word' %}: {{ execution.key_word }}</span></li>
+    <li><span>{% trans 'Pages' %}: {{ execution.pages }}</span></li>
+    <li><span>{% trans 'Source' %}: {{ execution.source }}</span></li>
+    <li>
+        <a href="{% url 'admin:mercado_libre_item_changelist' %}?q={{ execution.id }}">{% trans 'Items' %}</a>
+    </li>
+</ul>
+
+
+<form id="confirm-form" method="post" action="/admin/mercado_libre/execution/run_analysis_confirmation/">
+    {% csrf_token %}
+    <div>
+        <input type="hidden" name="execution_id" value={{ execution.id }}>
+        <label for="comparison_field">{% trans 'Choose a field to compare items with' %}:</label>
+        <select name="comparison_field" id="comparison_field" form="confirm-form">
+            <option value="name">{% trans 'Name' %}</option>
+            <option value="highlight">{% trans 'Highlight' %}</option>
+            <option value="original_price">{% trans 'Original Price' %}</option>
+            <option value="discount_price">{% trans 'Discount Price' %}</option>
+            <option value="discount_percentage">{% trans 'Discount Percentage' %}</option>
+            <option value="installments">{% trans 'Installments' %}</option>
+            <option value="price_per_installment">{% trans 'Price per Installment' %}</option>
+            <option value="store">{% trans 'Store' %}</option>
+        </select>
+        <input type="hidden" name="action" value="run_analysis_confirmation">
+        <br>
+        <a ref="{% url 'admin:mercado_libre_execution_changelist' %}" onclick="window.history.back(); return false;"
+            class="button cancel-link"
+            style="display: inline-block; vertical-align: middle; height: 15px; line-height: 15px; background: #ddd; border-radius: 4px; padding: 10px 15px; color: #333; margin: 0 0 0 10px;">
+            {% trans 'No, go back' %}
+        </a>
+        <input type="submit" value="{% trans 'Yes, sure' %}"
+            style="background: #124370; border-radius: 4px; padding: 10px 15px; color: #fff;">
+    </div>
+</form>
+
+{% endblock %}

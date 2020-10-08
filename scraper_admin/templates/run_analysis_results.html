@@ -1,0 +1,41 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('form#confirm-form input[type="submit"]').on("click", function (event) {
+            event.preventDefault();
+            $('form#confirm-form input[type="submit"]').prop('disabled', true);
+            $('form#confirm-form').submit();
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+
+<h1>{% trans 'Analysis Results for Execution with:' %}</h1>
+
+<ul>
+    <li><span>{% trans 'Key Word' %}: {{ execution.key_word }}</span></li>
+    <li><span>{% trans 'Pages' %}: {{ execution.pages }}</span></li>
+    <li><span>{% trans 'Source' %}: {{ execution.source }}</span></li>
+    <li>
+        <a href="{% url 'admin:mercado_libre_item_changelist' %}?q={{ execution.id }}">{% trans 'Items' %}</a>
+    </li>
+</ul>
+
+<div>
+    <span>There were {{ item_counter }} item(s) found in the execution using the Key Word above, but using the {{ comparison_field }} to compare the items, {{ product_counter }} product(s) were found.</span>
+    <br>
+    <br>
+    <a href="{% url 'admin:mercado_libre_execution_changelist' %}"
+        class="button cancel-link"
+        style="display: inline-block; vertical-align: middle; height: 15px; line-height: 15px; background: #ddd; border-radius: 4px; padding: 10px 15px; color: #333; margin: 0 0 0 10px;">
+        {% trans 'Back to Executions' %}
+    </a>
+</div>
+
+{% endblock %}

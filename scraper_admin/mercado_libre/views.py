@@ -25,6 +25,23 @@ class PostItemsView(View):
 
             return HttpResponse(**response_data)
 
+        execution_id = self.kwargs.get('execution_id', None)
+        execution = Execution.objects.get(pk=execution_id)
+
+        if request.GET.get('error', None):
+            execution.status = 'failed'
+            execution.save()
+
+            response_data_content = {
+                'message': 'Execution set to status \'failed\' successfully',
+            }
+            response_data = {
+                'content': json.dumps(response_data_content),
+                'status': 200
+            }
+
+            return HttpResponse(**response_data)
+
         if not isinstance(request_body, list):
             response_data_content = {
                 'message': 'POST json must be a list containing the items',
@@ -35,8 +52,6 @@ class PostItemsView(View):
             }
 
             return HttpResponse(**response_data)
-
-        execution_id = self.kwargs.get('execution_id', None)
 
         items = []
         keys = [
@@ -63,7 +78,6 @@ class PostItemsView(View):
 
         Item.objects.bulk_create([Item(**item) for item in items])
 
-        execution = Execution.objects.get(pk=execution_id)
         execution.status = 'completed'
         execution.save()
 

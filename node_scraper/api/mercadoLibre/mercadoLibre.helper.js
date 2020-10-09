@@ -24,7 +24,7 @@ module.exports.scrape = async (keyWord, pages, callbackUrl) => {
 
                 let titleLinkNodes = item.getElementsByClassName('ui-search-item__group__element ui-search-link')
                 let highlightSelector = document.querySelector(
-                    `#root-app > div > div > section > ol > li:nth-child(${i+1}) > div > div > div.ui-search-result__content-wrapper > div.ui-search-item__highlight-label.ui-search-item__highlight-label--best_seller > span`).innerText
+                    `#root-app > div > div > section > ol > li:nth-child(${i+1}) > div > div > div.ui-search-result__content-wrapper > div.ui-search-item__highlight-label.ui-search-item__highlight-label--best_seller > span`)
                 let priceNodes = item.getElementsByClassName('price-tag-fraction')
                 let discountPercentageNodes = item.getElementsByClassName('ui-search-price__discount')
                 let priceGroupNodes = item.getElementsByClassName('ui-search-item__group ui-search-item__group--price')
